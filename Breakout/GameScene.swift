@@ -62,17 +62,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         // Ask each brick, "is it you?"
         for brick in bricks {
-            if contact.bodyA.node == brick ||
-                contact.bodyB.node == brick {
-                score += 1
-                updateLabels()
-                brick.removeFromParent()
-                removedBricks += 1
-                if removedBricks == bricks.count {
-                    gameOver(winner: true)
-                }
-            }
-        }
+                 if contact.bodyA.node == brick ||
+                     contact.bodyB.node == brick {
+                     score += 1
+                     updateLabels()
+                     if brick.color == .blue {
+                         brick.color = .orange   // blue bricks turn orange
+                     }
+                     else if brick.color == .orange {
+                         brick.color = .green    // orange bricks turn green
+                     }
+                     else {  // must be a green brick, which get removed
+                         brick.removeFromParent()
+                         removedBricks += 1
+                         if removedBricks == bricks.count {
+                             gameOver(winner: true)
+                         }
+                     }
+                 }
+             }
         if contact.bodyA.node?.name == "loseZone" ||
             contact.bodyB.node?.name == "loseZone" {
             lives -= 1
@@ -148,7 +156,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func makePaddle() {
         paddle.removeFromParent()
-        paddle = SKSpriteNode(color: .white, size: CGSize(width: frame.width/4, height: 20))
+        paddle = SKSpriteNode(color: .white, size: CGSize(width: frame.width, height: 20))
         paddle.position = CGPoint(x: frame.midX, y: frame.minY + 125)
         paddle.name = "paddle"
         paddle.physicsBody = SKPhysicsBody(rectangleOf: paddle.size)
@@ -165,10 +173,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(brick)
         bricks.append(brick)
     }
-}
+
 
 func makeLoseZone() {
-    loseZone = SKSpriteNode(color: .red size: CGSize(width: frame.width, height: 50))
+    loseZone = SKSpriteNode(color: .red, size: CGSize(width: frame.width, height: 50))
     loseZone.position = CGPoint(x: frame.midX, y: frame.minY + 25)
     loseZone.name = "loseZone"
     loseZone.physicsBody = SKPhysicsBody(rectangleOf: loseZone.size)
@@ -187,13 +195,16 @@ func makeBricks() {
     removedBricks = 0 // Reset the counter
     
     // Now, figure the number and spacing of each row of bricks
-    let count = Int(frame.width) / 55 // Bricks per row
-    let xOffset = (Int(frame.width) - (count * 55)) / 2 + Int(frame.minX) + 25
-    let y = Int(frame.maxY) - 15
-    for i in 0..<count {
-        let x = i * 55 + xOffset
-        makeBricks(x: x, y: y, color: .green)
-    }
+    let count = Int(frame.width) / 55   // bricks per row
+        let xOffset = (Int(frame.width) - (count * 55)) / 2 + Int(frame.minX) + 25
+        let colors: [UIColor] = [.blue, .orange, .green]
+        for r in 0..<3 {
+            let y = Int(frame.maxY) - 15 - (r * 25)
+            for i in 0..<count {
+                let x = i * 55 + xOffset
+                makeBrick(x: x , y: y, color: colors[r])
+            }
+        }
 }
 func makeLabels() {
     playLabel.fontSize = 24
@@ -228,3 +239,4 @@ func gameOver(winner: Bool) {
 }
 
 
+}
